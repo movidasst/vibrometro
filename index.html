@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06172b">
+  <meta name="description" content="Simulador didáctico de vibrómetro ocupacional para vibración mano-brazo y cuerpo entero. La Movida SST Plus.">
+  <title>Vibrómetro Virtual | Movida SST+</title>
+  <link rel="icon" href="https://laboratorio.movidasst.com/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="https://laboratorio.movidasst.com/" aria-label="Volver al Laboratorio Virtual">
+      <img src="https://laboratorio.movidasst.com/assets/logo-movida-sst-plus.png?v=20260904-2" alt="Logo La Movida SST Plus">
+      <span><strong>La Movida de SST Plus</strong><small>MovidaLab HO · Vibraciones</small></span>
+    </a>
+    <div class="top-actions">
+      <button id="toggleGuide" class="chip active" type="button" aria-pressed="true">Modo guiado</button>
+      <button id="openHelp" class="chip" type="button">Ayuda</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">LABORATORIO DE HIGIENE OCUPACIONAL</p>
+        <h1>Aprende a operar un <em>vibrómetro.</em></h1>
+        <p>Configura el instrumento, ubica el acelerómetro y comprende cómo los ejes, la ponderación y el tiempo de exposición modifican la evaluación.</p>
+      </div>
+      <div class="standard-note">
+        <strong>Base técnica</strong>
+        <span>ISO 8041-1 · ISO 5349-1/2 · ISO 2631-1 + Amd.1:2010</span>
+        <small>Simulación didáctica. No sustituye medición real, calibración ni criterio profesional.</small>
+      </div>
+    </section>
+
+    <section class="mode-strip" aria-label="Modo de evaluación">
+      <button class="mode-card selected" data-mode="hav" type="button">
+        <span class="mode-icon">✋</span>
+        <span><strong>MANO–BRAZO</strong><small>HAV · herramienta / empuñadura</small></span>
+      </button>
+      <button class="mode-card" data-mode="wbv" type="button">
+        <span class="mode-icon">🪑</span>
+        <span><strong>CUERPO ENTERO</strong><small>WBV · asiento / plataforma</small></span>
+      </button>
+    </section>
+
+    <section class="workspace">
+      <aside class="left-panel">
+        <section class="card scenario-card">
+          <div class="card-head">
+            <div><span class="kicker">ESCENARIO</span><h2>Fuente simulada</h2></div>
+            <span id="scenarioBadge" class="badge">HAV</span>
+          </div>
+          <label for="scenarioSelect">Actividad</label>
+          <select id="scenarioSelect"></select>
+          <p id="scenarioDescription" class="muted"></p>
+          <div class="scenario-meta">
+            <div><span>Patrón</span><strong id="scenarioPattern">Continuo</strong></div>
+            <div><span>Exposición diaria</span><strong id="scenarioExposure">2 h</strong></div>
+          </div>
+        </section>
+
+        <section class="card sensor-card">
+          <div class="card-head">
+            <div><span class="kicker">TRANSDUCTOR</span><h2>Ubicación del sensor</h2></div>
+          </div>
+          <div id="sensorDiagram" class="sensor-diagram hav" aria-label="Diagrama didáctico de ubicación del acelerómetro">
+            <div class="tool-shape"></div>
+            <button class="sensor-point correct selected" data-sensor="correct" type="button" aria-label="Ubicación correcta"></button>
+            <button class="sensor-point far" data-sensor="far" type="button" aria-label="Ubicación demasiado alejada"></button>
+            <button class="sensor-point loose" data-sensor="loose" type="button" aria-label="Montaje deficiente"></button>
+            <div class="axis triad"><i class="x">X</i><i class="y">Y</i><i class="z">Z</i></div>
+          </div>
+          <div class="sensor-options" role="group" aria-label="Seleccionar ubicación del sensor">
+            <button class="sensor-choice selected" data-sensor="correct" type="button">Correcta</button>
+            <button class="sensor-choice" data-sensor="far" type="button">Lejos</button>
+            <button class="sensor-choice" data-sensor="loose" type="button">Montaje flojo</button>
+          </div>
+          <p id="sensorFeedback" class="feedback ok">Sensor próximo al punto de transmisión y montaje rígido.</p>
+        </section>
+
+        <section class="card guide-card" id="guideCard">
+          <div class="guide-top"><span id="guideStepLabel">Paso 1 de 8</span><button id="guideWhere" type="button">Muéstrame dónde</button></div>
+          <h2 id="guideTitle">Enciende el instrumento</h2>
+          <p id="guideText">Pulsa POWER. Antes de medir en campo, inspecciona equipo, sensor, cable y batería.</p>
+          <div class="guide-progress"><i id="guideProgress"></i></div>
+        </section>
+      </aside>
+
+      <section class="instrument-zone">
+        <div class="instrument" aria-label="Vibrómetro virtual MVH-PRO 800">
+          <div class="instrument-topline"><span>MOVIDA SST+</span><small>MVH–PRO 800 SIM</small></div>
+          <div class="display" id="display">
+            <div class="display-status">
+              <span id="displayMode">HAV</span>
+              <span id="displayWeight">Wh</span>
+              <span id="displayRange">AUTO</span>
+              <span id="displayRun">STOP</span>
+            </div>
+            <div class="screen-main">
+              <div class="primary-reading">
+                <span id="primaryLabel">a<sub>hv</sub></span>
+                <strong id="primaryValue">0.00</strong>
+                <small>m/s²</small>
+              </div>
+              <div class="axis-readings">
+                <div><span>X</span><strong id="xValue">0.00</strong></div>
+                <div><span>Y</span><strong id="yValue">0.00</strong></div>
+                <div><span>Z</span><strong id="zValue">0.00</strong></div>
+              </div>
+            </div>
+            <div class="screen-footer">
+              <span>RMS <strong id="rmsValue">0.00</strong></span>
+              <span>PEAK <strong id="peakValue">0.00</strong></span>
+              <span>CF <strong id="crestValue">0.0</strong></span>
+              <span id="timerValue">00:00</span>
+            </div>
+            <div id="screenAlert" class="screen-alert" hidden></div>
+          </div>
+
+          <div class="control-grid">
+            <button id="powerBtn" class="control power" type="button"><b>⏻</b><span>POWER</span></button>
+            <button id="verifyBtn" class="control" type="button"><b>CAL</b><span>Verificar</span></button>
+            <button id="weightBtn" class="control" type="button"><b>W</b><span>Ponderación</span></button>
+            <button id="rangeBtn" class="control" type="button"><b>RNG</b><span>Rango</span></button>
+            <button id="startBtn" class="control start" type="button"><b>▶Ⅱ</b><span>Medir</span></button>
+            <button id="holdBtn" class="control" type="button"><b>H</b><span>HOLD</span></button>
+            <button id="resetBtn" class="control" type="button"><b>↺</b><span>RESET</span></button>
+            <button id="saveBtn" class="control" type="button"><b>MEM</b><span>Guardar</span></button>
+          </div>
+          <div class="instrument-foot"><span>Human Vibration Meter</span><span>Uso didáctico</span></div>
+        </div>
+      </section>
+
+      <aside class="right-panel">
+        <section class="card analysis-card">
+          <div class="card-head">
+            <div><span class="kicker">PANEL DIDÁCTICO</span><h2>¿Qué estás viendo?</h2></div>
+          </div>
+          <div class="metric-tabs" role="tablist" aria-label="Métricas">
+            <button class="metric-tab active" data-tab="instant" type="button">Medición</button>
+            <button class="metric-tab" data-tab="exposure" type="button">Exposición</button>
+            <button class="metric-tab" data-tab="why" type="button">Interpretación</button>
+          </div>
+
+          <div class="tab-panel active" data-panel="instant">
+            <dl class="metric-list">
+              <div><dt id="m1Label">a<sub>hwx</sub></dt><dd id="m1Value">0.00 m/s²</dd></div>
+              <div><dt id="m2Label">a<sub>hwy</sub></dt><dd id="m2Value">0.00 m/s²</dd></div>
+              <div><dt id="m3Label">a<sub>hwz</sub></dt><dd id="m3Value">0.00 m/s²</dd></div>
+              <div class="accent"><dt id="m4Label">a<sub>hv</sub></dt><dd id="m4Value">0.00 m/s²</dd></div>
+            </dl>
+            <p id="instantExplanation" class="explain">En mano-brazo se mide en tres ejes y se obtiene el valor total como raíz de la suma de cuadrados.</p>
+          </div>
+
+          <div class="tab-panel" data-panel="exposure">
+            <div class="exposure-result">
+              <span id="exposureTitle">A(8)</span>
+              <strong id="a8Value">0.00</strong><small>m/s²</small>
+            </div>
+            <label for="exposureHours">Tiempo diario de exposición</label>
+            <div class="time-row"><input id="exposureHours" type="range" min="0.25" max="8" step="0.25" value="2"><output id="exposureHoursOut">2.00 h</output></div>
+            <div id="formulaBox" class="formula">A(8) = a<sub>hv</sub> × √(T/8 h)</div>
+            <button id="addOperation" class="secondary" type="button">+ Agregar operación a la jornada</button>
+            <div id="operationsList" class="operations-list"></div>
+            <div id="combinedBox" class="combined" hidden><span>Jornada combinada</span><strong id="combinedA8">0.00 m/s²</strong></div>
+          </div>
+
+          <div class="tab-panel" data-panel="why">
+            <div id="interpretation" class="interpretation">
+              <h3>Prepara el equipo</h3>
+              <p>Enciende, verifica la cadena de medición y configura el modo antes de iniciar.</p>
+            </div>
+            <div class="fact-grid">
+              <button type="button" data-fact="weight"><span>Ponderación</span><strong id="factWeight">Wh</strong></button>
+              <button type="button" data-fact="axis"><span>Ejes</span><strong>X · Y · Z</strong></button>
+              <button type="button" data-fact="range"><span>Rango</span><strong id="factRange">AUTO</strong></button>
+            </div>
+            <p class="legal-note">El simulador no aplica límites legales automáticamente. Los valores de acción/límite dependen de la legislación aplicable.</p>
+          </div>
+        </section>
+
+        <section class="card history-card">
+          <div class="card-head"><div><span class="kicker">MEMORIA</span><h2>Lecturas guardadas</h2></div><button id="clearMemory" class="text-btn" type="button">Borrar</button></div>
+          <div id="memoryList" class="memory-list"><p class="muted">Aún no hay mediciones guardadas.</p></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <dialog id="helpDialog" class="help-dialog">
+    <div class="dialog-card">
+      <button id="closeHelp" class="dialog-close" type="button" aria-label="Cerrar">×</button>
+      <span class="kicker">REFERENCIA RÁPIDA</span>
+      <h2>Qué enseña este simulador</h2>
+      <div class="help-grid">
+        <div><strong>HAV</strong><p>Wh, ejes X/Y/Z, a<sub>hv</sub>, exposición A(8), ubicación del sensor en la zona de agarre.</p></div>
+        <div><strong>WBV</strong><p>Wd en X/Y, Wk en Z, factores k, A(8) por eje, eje dominante, RMS, Peak, Crest Factor y VDV didáctico.</p></div>
+        <div><strong>Instrumento</strong><p>POWER, verificación, rango, ponderación, sobrecarga, bajo-rango, HOLD, RESET y memoria.</p></div>
+        <div><strong>Método</strong><p>La medición debe representar el trabajo real y el tiempo diario debe estimarse por operación.</p></div>
+      </div>
+    </div>
+  </dialog>
+
+  <footer>
+    <span>© La Movida de SST Plus · De la Reacción a la Prevención</span>
+    <a href="https://www.movidasst.com">www.movidasst.com</a>
+    <a href="https://estudia.movidasst.com">estudia.movidasst.com</a>
+  </footer>
+</body>
+</html>
