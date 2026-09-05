@@ -8,9 +8,64 @@
   <title>Vibrómetro Virtual | Movida SST+</title>
   <link rel="icon" href="https://laboratorio.movidasst.com/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auth.css">
+  <script src="auth.js" defer></script>
   <script src="app.js" defer></script>
 </head>
-<body>
+<body class="auth-locked">
+  <section class="login-gate" id="loginGate" aria-labelledby="loginTitle">
+    <div class="login-shell">
+      <div class="login-story">
+        <a class="login-brand" href="https://laboratorio.movidasst.com/" aria-label="Volver al Laboratorio Virtual de Higiene Ocupacional">
+          <img src="https://laboratorio.movidasst.com/assets/logo-movida-sst-plus.png?v=20260904-2" alt="Logo de La Movida de SST Plus">
+          <span><strong>La Movida de SST Plus</strong><small>De la Reacción a la Prevención</small></span>
+        </a>
+        <div class="login-story-copy">
+          <p class="login-eyebrow"><span></span> LABORATORIO DE HIGIENE OCUPACIONAL</p>
+          <h1 id="loginTitle">Domina el<br><em>vibrómetro.</em></h1>
+          <p>Practica la medición de vibraciones mano–brazo y cuerpo entero, aprende a ubicar el acelerómetro y comprende cómo se construye la exposición A(8).</p>
+          <div class="login-feature-strip" aria-label="Funciones incluidas">
+            <span><b>01</b>HAV · Mano–brazo</span>
+            <span><b>02</b>WBV · Cuerpo entero</span>
+            <span><b>03</b>A(8) · Guía didáctica</span>
+          </div>
+        </div>
+        <a class="login-back" href="https://laboratorio.movidasst.com/">← Volver al Laboratorio</a>
+      </div>
+
+      <div class="login-card">
+        <div class="login-card-heading">
+          <span class="member-icon" aria-hidden="true">+</span>
+          <div><p>ÁREA DE PRÁCTICA · SST+</p><h2>Identifica tu acceso</h2></div>
+        </div>
+        <p class="login-intro">Ingresa con la cédula y el código de integrante registrados en La Movida SST Plus.</p>
+
+        <form class="login-form" id="memberLogin" novalidate>
+          <label for="memberId">Cédula de identidad</label>
+          <input id="memberId" name="cedula" type="text" inputmode="numeric" autocomplete="username" maxlength="20" placeholder="Solo números" required>
+
+          <label for="memberPassword">Clave o código de integrante</label>
+          <div class="password-field">
+            <input id="memberPassword" name="codigo" type="password" autocomplete="current-password" maxlength="80" placeholder="Escribe tu clave" required>
+            <button id="togglePassword" type="button" aria-label="Mostrar clave" aria-pressed="false">Mostrar</button>
+          </div>
+
+          <p class="login-message" id="loginMessage" role="status" aria-live="polite"></p>
+          <button class="login-submit" id="loginSubmit" type="submit"><span>Abrir laboratorio</span><i aria-hidden="true">→</i></button>
+        </form>
+
+        <div class="register-callout">
+          <strong>¿No estás registrado?</strong>
+          <span>Regístrate gratuitamente para obtener tu código de integrante.</span>
+          <a href="https://registro.movidasst.com/">Registrarme ahora</a>
+        </div>
+        <p class="login-privacy">La validación se realiza con el registro oficial. La aplicación no guarda tu cédula ni tu clave.</p>
+        <div class="login-contact"><span>Elaborado por <strong>David Linares Brea</strong></span><a href="mailto:info@movidasst.com">info@movidasst.com</a><a href="tel:+56968615650">+56 9 6861 5650</a></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="appShell" hidden aria-hidden="true">
   <header class="topbar">
     <a class="brand" href="https://laboratorio.movidasst.com/" aria-label="Volver al Laboratorio Virtual">
       <img src="https://laboratorio.movidasst.com/assets/logo-movida-sst-plus.png?v=20260904-2" alt="Logo La Movida SST Plus">
@@ -21,6 +76,12 @@
       <button id="openHelp" class="chip" type="button">Ayuda</button>
     </div>
   </header>
+
+  <nav class="resource-bar" aria-label="Acceso del integrante">
+    <a class="resource-link" href="https://laboratorio.movidasst.com/">← Volver al Laboratorio</a>
+    <a class="resource-link" href="https://www.movidasst.com/">www.movidasst.com</a>
+    <div class="member-session"><span>Hola, <strong id="memberName">integrante</strong></span><button id="logoutBtn" type="button">Cerrar sesión</button></div>
+  </nav>
 
   <main class="app-shell">
     <section class="intro">
@@ -210,5 +271,6 @@
     <a href="https://www.movidasst.com">www.movidasst.com</a>
     <a href="https://estudia.movidasst.com">estudia.movidasst.com</a>
   </footer>
+  </div>
 </body>
 </html>
