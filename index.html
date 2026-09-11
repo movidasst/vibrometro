@@ -7,10 +7,11 @@
   <meta name="description" content="Simulador didáctico de vibrómetro ocupacional para vibración mano-brazo y cuerpo entero. La Movida SST Plus.">
   <title>Vibrómetro Virtual | Movida SST+</title>
   <link rel="icon" href="https://laboratorio.movidasst.com/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260911">
   <link rel="stylesheet" href="auth.css">
   <script src="auth.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="vibration-math.js?v=20260911" defer></script>
+  <script src="app.js?v=20260911" defer></script>
 
 <style id="movida-logo-2026">
 img[src*="logo-movida-sst-plus"]{object-fit:contain!important;object-position:center!important;border-radius:50%!important;filter:drop-shadow(0 7px 12px rgba(0,32,91,.35))!important}
@@ -154,12 +155,13 @@ img[src*="logo-movida-sst-plus"]{object-fit:contain!important;object-position:ce
           <h2 id="guideTitle">Enciende el instrumento</h2>
           <p id="guideText">Pulsa POWER. Antes de medir en campo, inspecciona equipo, sensor, cable y batería.</p>
           <div class="guide-progress"><i id="guideProgress"></i></div>
+          <div class="guide-nav"><button id="guidePrev" type="button">Anterior</button><button id="guideNext" type="button">Siguiente paso</button></div>
         </section>
       </aside>
 
-      <section class="instrument-zone">
+      <section class="instrument-zone" id="instrumentSection">
         <div class="instrument" aria-label="Vibrómetro virtual MVH-PRO 800">
-          <div class="instrument-topline"><span>MOVIDA SST+</span><small>MVH–PRO 800 SIM</small></div>
+          <div class="sensor-ports" aria-hidden="true"><span>X</span><span>Y</span><span>Z</span></div><div class="instrument-topline"><span>MOVIDA SST+</span><small>MVH–PRO 800 SIM</small></div>
           <div class="display" id="display">
             <div class="display-status">
               <span id="displayMode">HAV</span>
@@ -185,17 +187,18 @@ img[src*="logo-movida-sst-plus"]{object-fit:contain!important;object-position:ce
               <span>CF <strong id="crestValue">0.0</strong></span>
               <span id="timerValue">00:00</span>
             </div>
-            <div id="screenAlert" class="screen-alert" hidden></div>
+            <div id="screenAlert" role="status" aria-live="polite" class="screen-alert" hidden></div>
           </div>
 
+          <p class="instrument-hint">RMS acumulado · PEAK y CF del eje de mayor RMS sin factor k · datos simulados</p>
           <div class="control-grid">
             <button id="powerBtn" class="control power" type="button"><b>⏻</b><span>POWER</span></button>
             <button id="verifyBtn" class="control" type="button"><b>CAL</b><span>Verificar</span></button>
             <button id="weightBtn" class="control" type="button"><b>W</b><span>Ponderación</span></button>
             <button id="rangeBtn" class="control" type="button"><b>RNG</b><span>Rango</span></button>
             <button id="startBtn" class="control start" type="button"><b>▶Ⅱ</b><span>Medir</span></button>
-            <button id="holdBtn" class="control" type="button"><b>H</b><span>HOLD</span></button>
-            <button id="resetBtn" class="control" type="button"><b>↺</b><span>RESET</span></button>
+            <button id="holdBtn" class="control" type="button"><b>H</b><span>Pausa</span></button>
+            <button id="resetBtn" class="control" type="button"><b>↺</b><span>Reiniciar</span></button>
             <button id="saveBtn" class="control" type="button"><b>MEM</b><span>Guardar</span></button>
           </div>
           <div class="instrument-foot"><span>Human Vibration Meter</span><span>Uso didáctico</span></div>
@@ -203,17 +206,18 @@ img[src*="logo-movida-sst-plus"]{object-fit:contain!important;object-position:ce
       </section>
 
       <aside class="right-panel">
-        <section class="card analysis-card">
+        <section class="card analysis-card" id="analysisSection">
           <div class="card-head">
             <div><span class="kicker">PANEL DIDÁCTICO</span><h2>¿Qué estás viendo?</h2></div>
           </div>
-          <div class="metric-tabs" role="tablist" aria-label="Métricas">
+          <div class="metric-tabs" role="group" aria-label="Métricas">
             <button class="metric-tab active" data-tab="instant" type="button">Medición</button>
             <button class="metric-tab" data-tab="exposure" type="button">Exposición</button>
             <button class="metric-tab" data-tab="why" type="button">Interpretación</button>
           </div>
 
           <div class="tab-panel active" data-panel="instant">
+            <div class="axis-chart" aria-label="RMS ponderado por eje, sin factores k"><div><b>X</b><div class="bar-track"><i id="barX"></i></div><span id="barValueX">0.00 m/s²</span></div><div><b>Y</b><div class="bar-track"><i id="barY"></i></div><span id="barValueY">0.00 m/s²</span></div><div><b>Z</b><div class="bar-track"><i id="barZ"></i></div><span id="barValueZ">0.00 m/s²</span></div></div><p class="muted">RMS por eje, antes de aplicar los factores k. Escala visual relativa al mayor eje.</p>
             <dl class="metric-list">
               <div><dt id="m1Label">a<sub>hwx</sub></dt><dd id="m1Value">0.00 m/s²</dd></div>
               <div><dt id="m2Label">a<sub>hwy</sub></dt><dd id="m2Value">0.00 m/s²</dd></div>
@@ -228,12 +232,12 @@ img[src*="logo-movida-sst-plus"]{object-fit:contain!important;object-position:ce
               <span id="exposureTitle">A(8)</span>
               <strong id="a8Value">0.00</strong><small>m/s²</small>
             </div>
-            <label for="exposureHours">Tiempo diario de exposición</label>
-            <div class="time-row"><input id="exposureHours" type="range" min="0.25" max="8" step="0.25" value="2"><output id="exposureHoursOut">2.00 h</output></div>
+            <label for="exposureHours">Tiempo diario de exposición efectiva</label><p class="muted">Tiempo en contacto con la vibración, no la duración de esta práctica. Las 8 h son la referencia de normalización, no un máximo de jornada.</p>
+            <div class="time-row"><input id="exposureHours" type="range" min="0.25" max="24" step="0.25" value="2"><output id="exposureHoursOut">2.00 h</output></div>
             <div id="formulaBox" class="formula">A(8) = a<sub>hv</sub> × √(T/8 h)</div>
             <button id="addOperation" class="secondary" type="button">+ Agregar operación a la jornada</button>
             <div id="operationsList" class="operations-list"></div>
-            <div id="combinedBox" class="combined" hidden><span>Jornada combinada</span><strong id="combinedA8">0.00 m/s²</strong></div>
+            <p id="combinedDetail" class="muted"></p><div id="combinedBox" class="combined" hidden><span>Jornada combinada</span><strong id="combinedA8">0.00 m/s²</strong></div>
           </div>
 
           <div class="tab-panel" data-panel="why">
@@ -252,7 +256,7 @@ img[src*="logo-movida-sst-plus"]{object-fit:contain!important;object-position:ce
 
         <section class="card history-card">
           <div class="card-head"><div><span class="kicker">MEMORIA</span><h2>Lecturas guardadas</h2></div><button id="clearMemory" class="text-btn" type="button">Borrar</button></div>
-          <div id="memoryList" class="memory-list"><p class="muted">Aún no hay mediciones guardadas.</p></div>
+          <p class="muted">Memoria de esta sesión: hasta 50 lecturas. Exporta antes de cerrar o recargar.</p><button id="exportMemory" class="secondary" type="button">Descargar lecturas CSV</button><div id="memoryList" class="memory-list"><p class="muted">Aún no hay mediciones guardadas.</p></div>
         </section>
       </aside>
     </section>
@@ -265,13 +269,23 @@ img[src*="logo-movida-sst-plus"]{object-fit:contain!important;object-position:ce
       <h2>Qué enseña este simulador</h2>
       <div class="help-grid">
         <div><strong>HAV</strong><p>Wh, ejes X/Y/Z, a<sub>hv</sub>, exposición A(8), ubicación del sensor en la zona de agarre.</p></div>
-        <div><strong>WBV</strong><p>Wd en X/Y, Wk en Z, factores k, A(8) por eje, eje dominante, RMS, Peak, Crest Factor y VDV didáctico.</p></div>
+        <div><strong>WBV</strong><p>Wd en X/Y, Wk en Z, factores k, A(8) por eje, eje dominante, RMS, Peak y Crest Factor. VDV se explica en la guía; no se calcula en esta versión.</p></div>
         <div><strong>Instrumento</strong><p>POWER, verificación, rango, ponderación, sobrecarga, bajo-rango, HOLD, RESET y memoria.</p></div>
         <div><strong>Método</strong><p>La medición debe representar el trabajo real y el tiempo diario debe estimarse por operación.</p></div>
+      </div>
+      <div class="manual-details">
+        <details open><summary>Cómo realizar la práctica</summary><p>1. Enciende. 2. Selecciona HAV o WBV y la actividad. 3. Ubica el sensor. 4. Pulsa CAL para una comprobación simulada. 5. Revisa la ponderación y el rango. 6. Mide al menos 10 segundos para este ejercicio. 7. Detén y ajusta la exposición diaria. 8. Guarda o agrega la operación a la jornada.</p><p>Los 10 segundos son una condición didáctica de la aplicación: no constituyen un tiempo mínimo normativo ni garantizan una medición representativa.</p></details>
+        <details><summary>Qué hacen los botones</summary><p><b>POWER:</b> enciende o apaga; al apagar se borra la serie actual. <b>CAL:</b> comprobación funcional simulada, no calibración trazable. <b>W:</b> explica la ponderación seleccionada automáticamente. <b>RNG:</b> alterna AUTO, LOW, MID y HIGH. Detén antes de cambiar rango; se inicia una serie nueva.</p><p><b>Medir:</b> inicia o detiene; al volver a iniciar continúa la misma serie. <b>H / Pausa:</b> suspende adquisición y cronómetro en este simulador. <b>Reiniciar:</b> borra la serie actual. <b>MEM:</b> conserva una lectura detenida y válida durante esta sesión.</p></details>
+        <details><summary>RMS, pico y factor de cresta</summary><p>RMS es la raíz del promedio de los cuadrados de la aceleración ponderada. Aquí se acumulan bloques sintéticos de un segundo. La pantalla muestra los tres RMS y calcula la magnitud HAV o WBV.</p><p>PEAK y CF corresponden al eje con mayor RMS ponderado sin factores k. PEAK conserva el máximo simulado de ese eje; CF = PEAK / RMS del mismo eje y periodo. No son el pico vectorial ni un diagnóstico de daño.</p></details>
+        <details><summary>A(8) y varias operaciones</summary><p>HAV: se obtiene la suma vectorial de X, Y y Z. Para una misma mano, A(8) = √[Σ(a²hv,i × Ti) / 8 h]. Evalúa cada mano por separado cuando corresponda.</p><p>WBV sentado: se acumula la exposición de cada eje por separado, con kX = kY = 1,4 y kZ = 1. El resultado diario es el mayor de los tres A(8). No se suman los máximos de cada tarea cuando cambia el eje dominante. HAV y WBV nunca se combinan en un único resultado.</p></details>
+        <details><summary>VDV: qué es y por qué no aparece un valor</summary><p>VDV = [∫ a⁴w(t) dt]¼, en m/s¹·⁷⁵. Da mayor peso a choques y transitorios. Su cálculo requiere la historia temporal de aceleración ponderada; no se obtiene elevando a la cuarta potencia el RMS de cada segundo. Esta versión simula bloques RMS y picos, por lo que no presenta un VDV numérico.</p></details>
+        <details><summary>Montaje, rango y calidad de la medición</summary><p>Un sensor alejado o flojo puede producir resultados no representativos. Los cambios de montaje y de modo requieren repetir la comprobación. La sobrecarga o el bajo-rango invalidan la serie del ejercicio: corrige el rango y reinicia.</p><p>Los escenarios, picos, rangos y sesgos de montaje son ilustrativos, no especificaciones de un instrumento ni valores certificados de esas máquinas. Las ponderaciones Wh, Wd y Wk se representan con datos ya ponderados; la aplicación no filtra una señal física ni usa sensores del teléfono.</p></details>
+        <details><summary>De la medición a la prevención</summary><p>En HAV considera equipos con menor vibración y mantenimiento adecuado. En WBV revisa superficie, velocidad y ajuste del asiento. Documenta tareas, condiciones, montaje, tiempos y variaciones antes de interpretar una evaluación real.</p><p>Referencias de consulta: ISO 5349-1 (mano–brazo), ISO 2631-1 (cuerpo entero) e ISO 8041-1 (instrumentación). Orientación preventiva: <a href="https://www.hse.gov.uk/pubns/indg175.pdf" target="_blank" rel="noopener">HSE: mano–brazo</a> y <a href="https://www.hse.gov.uk/pubns/indg242.pdf" target="_blank" rel="noopener">HSE: cuerpo entero</a>. Verifica la edición y legislación aplicables a cada evaluación.</p></details>
       </div>
     </div>
   </dialog>
 
+  <nav class="mobile-nav" aria-label="Navegación de la práctica"><a href="#scenarioSelect">Preparar</a><a href="#instrumentSection">Instrumento</a><a href="#analysisSection">Resultados</a><a href="#guideCard">Guía</a></nav>
   <footer>
     <span>© La Movida de SST Plus · De la Reacción a la Prevención</span>
     <a href="https://www.movidasst.com">www.movidasst.com</a>
